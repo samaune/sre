@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=10, user-scalable=yes">
+    <title>Data Binding Example</title>
+
+    <link rel="stylesheet" type="text/css" href="extjs/shared/examples.css" />
+
+    <!-- GC -->
+
+    <script type="text/javascript" src="extjs/shared/include-ext.js"></script>
+    <script type="text/javascript" src="extjs/shared/options-toolbar.js"></script>
+
+    <!-- page specific -->
+    <script type="text/javascript">
+	Ext.require([
+		'Ext.grid.*',
+		'Ext.data.*',
+		'Ext.panel.*',
+		'Ext.layout.container.Border'
+	]);
+
+	Ext.onReady(function() {
+		var store, grid, bookTplMarkup, bookTpl;
+
+		Ext.define('Book', {
+			extend: 'Ext.data.Model',
+			proxy: {
+				type: 'ajax',
+				reader: 'xml'
+			},
+			fields: [
+				// set up the fields mapping into the xml doc
+				// The first needs mapping, the others are very basic
+				{ name: 'Author', mapping: '@author.name' },
+				'Title',
+				'Manufacturer',
+				'ProductGroup',
+				'DetailPageURL'
+			]
+		});
+
+		// create the Data Store
+		store = Ext.create('Ext.data.Store', {
+			model: 'Book',
+			proxy: {
+			// load using HTTP
+				type: 'ajax',
+				url: 'extjs/shared/sheldon.xml',
+				// the return will be XML, so lets set up a reader
+				reader: {
+					type: 'xml',
+					record: 'Item',
+					totalProperty: 'total'
+				}
+			}
+		});
+
+		// create the grid
+		grid = Ext.create('Ext.grid.Panel', {
+			bufferedRenderer: false,
+			store: store,
+			columns: [
+				{ text: "Author", width: 120, dataIndex: 'Author', sortable: true },
+				{ text: "Title", flex: 1, dataIndex: 'Title', sortable: true },
+				{ text: "Manufacturer", width: 125, dataIndex: 'Manufacturer', sortable: true },
+				{ text: "Product Group", width: 125, dataIndex: 'ProductGroup', sortable: true }
+			],
+			forceFit: true,
+			height: 210,
+			split: true,
+			region: 'north'
+		});
+
+		// define a template to use for the detail view
+		bookTplMarkup = [
+			'Title: <a href="{DetailPageURL}" target="_blank">{Title}</a><br/>',
+			'Author: {Author}<br/>',
+			'Manufacturer: {Manufacturer}<br/>',
+			'Product Group: {ProductGroup}<br/>'
+		];
+
+		bookTpl = Ext.create('Ext.Template', bookTplMarkup);
+
+		Ext.create('Ext.Panel', {
+			renderTo: 'binding-example',
+			frame: true,
+			title: 'Book List',
+			width: 580,
+			height: 400,
+			layout: 'border',
+			items: [
+				grid, {
+					id: 'detailPanel',
+					region: 'center',
+					bodyPadding: 7,
+					bodyStyle: "background: #ffffff;",
+					html: 'Please select a book to see additional details.'
+				}]
+		});
+
+		// update panel body on selection change
+		grid.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+			var detailPanel;
+
+			if (selectedRecord.length) {
+				detailPanel = Ext.getCmp('detailPanel');
+				detailPanel.update(bookTpl.apply(selectedRecord[0].data));
+			}
+		});
+
+		store.load();
+	});
+	</script>
+</head>
+<body>
+    <h1>Data Binding Example</h1>
+    <p>Note that the js is not minified so it is readable. See <a href="binding.js">binding.js</a>.</p>
+    <div id="binding-example"></div>
+</body>
+</html>
