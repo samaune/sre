@@ -1,0 +1,15 @@
+[  {
+        "namespace": "staging",
+        "dns_names": [
+            "staging-myportal.nagaworld.com"
+        ]
+    },
+    {
+        "namespace": "prod",
+        "dns_names" : [
+            "myportal.nagaworld.com",
+            "noa.nagaworld.com"
+        ]
+    }
+]
+
